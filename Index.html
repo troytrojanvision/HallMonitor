@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shrink Iframe Content with Black Background</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    background-color: black;
+  }
+  .container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+  iframe {
+    border: none;
+  }
+  .left-frame {
+    flex: 1 1 50%;
+    height: 100%;
+  }
+  .right-frame-wrapper {
+    flex: 1 1 50%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  .right-frame {
+    width: 133.33%; /* 1 / scale */
+    height: 133.33%;
+    transform-origin: top left;
+    transform: scale(0.75);
+    position: absolute;
+    top: 0; left: 0;
+  }
+</style>
+<script>
+  // Refresh the page every 600,000 milliseconds (10 minutes)
+  setTimeout(function() {
+    location.reload();
+  }, 600000);
+</script>
+</head>
+<body>
+  <div class="container">
+    <iframe class="left-frame" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSwObb3pyhHBXs2az4oWYup9-K2StEtxFulZKepYMlFHmMoZp23BxfW2LrUG0FnPr44hHJhDwT0_Jxe/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+    <div class="right-frame-wrapper">
+      <iframe class="right-frame" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSOMZC4i78cLYnNw6H8L3FCTEOU9hXeE6hpDsGXHiwI02h4_GA4qtR5HoIsH4OrxSfUBBOQtTX4BIfu/pubhtml?gid=887785015&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+    </div>
+  </div>
+</body>
+</html>
