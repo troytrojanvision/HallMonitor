@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Shrink Iframe Content with Black Background</title>
+<title>Three Iframe Layout with Black Background</title>
 <style>
   html, body {
     margin: 0; padding: 0; height: 100%; width: 100%;
@@ -17,16 +17,35 @@
   }
   iframe {
     border: none;
+    width: 100%;
   }
-  .left-frame {
+  
+  /* --- New Left Column Wrapper --- */
+  .left-column {
     flex: 1 1 50%;
+    display: flex;
+    flex-direction: column; /* Stacks the two left frames vertically */
     height: 100%;
   }
+
+  /* Adjust this height percentage to line up perfectly under "Directors" */
+  .left-frame-top {
+    height: 75%; 
+  }
+
+  /* The new 3rd sheet fills the remaining bottom-left space */
+  .left-frame-bottom {
+    flex: 1; 
+    border-top: 2px solid #333; /* Optional: subtle separator line */
+  }
+  
+  /* --- Right Side (Kept your original scaling) --- */
   .right-frame-wrapper {
     flex: 1 1 50%;
     height: 100%;
     overflow: hidden;
     position: relative;
+    border-left: 2px solid #333; /* Optional: subtle separator line */
   }
   .right-frame {
     width: 133.33%; /* 1 / scale */
@@ -38,7 +57,7 @@
   }
 </style>
 <script>
-  // Refresh the page every 600,000 milliseconds (10 minutes)
+  // Refresh the page every 10 minutes
   setTimeout(function() {
     location.reload();
   }, 600000);
@@ -46,10 +65,17 @@
 </head>
 <body>
   <div class="container">
-    <iframe class="left-frame" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSwObb3pyhHBXs2az4oWYup9-K2StEtxFulZKepYMlFHmMoZp23BxfW2LrUG0FnPr44hHJhDwT0_Jxe/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+    
+    <div class="left-column">
+      <iframe class="left-frame-top" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSwObb3pyhHBXs2az4oWYup9-K2StEtxFulZKepYMlFHmMoZp23BxfW2LrUG0FnPr44hHJhDwT0_Jxe/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+      
+      <iframe class="left-frame-bottom" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRWD-JuHDwTmYa4aQEMq57ScNFBAEfrxKb8S3VHwADWPTCQLoFR_kSYHuccux6aWAkiu64LVofNtMPF/pubhtml?gid=1768086579&single=true"></iframe>
+    </div>
+    
     <div class="right-frame-wrapper">
       <iframe class="right-frame" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSOMZC4i78cLYnNw6H8L3FCTEOU9hXeE6hpDsGXHiwI02h4_GA4qtR5HoIsH4OrxSfUBBOQtTX4BIfu/pubhtml?gid=887785015&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
     </div>
+
   </div>
 </body>
 </html>
