@@ -1,0 +1,846 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hall Monitor</title>
+<style>
+  :root{
+    --bg:#09090b;
+    --panel:#151318;
+    --panel-2:#1c1a20;
+    --line:#2a2730;
+    --red:#b3122e;
+    --red-dim:#7a0d20;
+    --gold:#d4a017;
+    --text:#f4f3f6;
+    --muted:#a9a5b0;
+    --faint:#6f6b78;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;width:100%;
+    background:#000;
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    overflow:hidden;
+  }
+  .tv-frame{
+    position:relative;
+    width:min(100vw, 177.78vh);
+    height:min(100vh, 56.25vw);
+    margin:0 auto;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    color:var(--text);
+    box-shadow:0 0 0 1px #000;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:1.4vh 2vw;
+    background:linear-gradient(90deg,var(--red-dim),var(--red) 55%,var(--red-dim));
+    border-bottom:3px solid var(--gold);
+  }
+  header .brand{
+    display:flex;
+    align-items:baseline;
+    gap:1vw;
+  }
+  header .brand .mark{
+    font-weight:800;
+    font-size:clamp(18px,3.4vh,40px);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:#fff;
+    text-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+  header .brand .sub{
+    font-size:clamp(9px,1.3vh,16px);
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:#f4d9de;
+    opacity:.9;
+  }
+  header .week{
+    text-align:right;
+    font-size:clamp(10px,1.5vh,18px);
+    color:#fff;
+    letter-spacing:.05em;
+  }
+  header .week .label{
+    display:block;
+    font-size:clamp(8px,1.1vh,12px);
+    color:#f4d9de;
+    letter-spacing:.25em;
+    text-transform:uppercase;
+  }
+
+  /* ---------- Main grid ---------- */
+  main{
+    flex:1 1 auto;
+    display:grid;
+    grid-template-columns: 1.05fr 1.55fr 1fr;
+    gap:1.1vh 1vw;
+    padding:1.2vh 1.4vw;
+    min-height:0;
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-top:3px solid var(--red);
+    border-radius:6px;
+    padding:1vh 1vw;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .panel h2{
+    margin:0 0 1.2vh 0;
+    font-size:clamp(14px,2.4vh,28px);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:700;
+    border-bottom:1px solid var(--line);
+    padding-bottom:.8vh;
+  }
+  .panel h3{
+    margin:1.6vh 0 .8vh 0;
+    font-size:clamp(11px,1.7vh,19px);
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:700;
+  }
+
+  /* ---------- Anchor schedule tables ---------- */
+  table.sched{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+  }
+  table.sched th, table.sched td{
+    font-size:clamp(10px,1.75vh,20px);
+    padding:.7vh .3vw;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+  table.sched th{
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-size:clamp(9px,1.3vh,15px);
+  }
+  table.sched td.role{
+    text-align:left;
+    color:var(--gold);
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:clamp(9px,1.3vh,15px);
+    letter-spacing:.04em;
+  }
+  table.sched tr:last-child td{border-bottom:none;}
+  .global-note{
+    margin-top:1.6vh;
+    font-size:clamp(10px,1.6vh,18px);
+    color:var(--muted);
+    line-height:1.6;
+    background:var(--panel-2);
+    border-radius:4px;
+    padding:1.2vh .8vw;
+  }
+  .global-note b{color:var(--text);}
+
+  /* ---------- Story board ---------- */
+  .airdate-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:.5vw;
+    flex:0 0 auto;
+  }
+  .day-col{
+    background:var(--panel-2);
+    border-radius:4px;
+    padding:.5vh .4vw;
+    min-height:0;
+    max-height:34vh;
+    display:flex;
+    flex-direction:column;
+  }
+  .day-col .day-body{
+    overflow-y:auto;
+    min-height:0;
+    scrollbar-width:thin;
+    scrollbar-color:var(--red) transparent;
+  }
+  .day-col .day-label{
+    font-size:clamp(9px,1.5vh,17px);
+    font-weight:800;
+    letter-spacing:.08em;
+    color:#fff;
+    text-transform:uppercase;
+    text-align:center;
+    background:var(--red);
+    border-radius:3px;
+    padding:.4vh 0;
+    margin-bottom:.8vh;
+  }
+  .story-card{
+    font-size:clamp(9px,1.3vh,15px);
+    line-height:1.3;
+    margin-bottom:1vh;
+  }
+  .story-card .title{
+    color:var(--text);
+    font-weight:600;
+    display:block;
+  }
+  .story-card .rep{
+    color:var(--gold);
+    font-size:.92em;
+  }
+  .day-col .empty{
+    color:var(--faint);
+    font-size:clamp(9px,1.3vh,15px);
+    text-align:center;
+    padding-top:.4vh;
+  }
+
+  .pkg-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:.5vw;
+    margin-top:.4vh;
+    max-height:22vh;
+    overflow-y:auto;
+    scrollbar-width:thin;
+    scrollbar-color:var(--gold) transparent;
+  }
+  .pkg-col .day-label{
+    font-size:clamp(9px,1.3vh,15px);
+    font-weight:800;
+    letter-spacing:.08em;
+    color:var(--bg);
+    text-transform:uppercase;
+    text-align:center;
+    background:var(--gold);
+    border-radius:3px;
+    padding:.35vh 0;
+    margin-bottom:.7vh;
+  }
+  .pkg-item{
+    font-size:clamp(8.5px,1.2vh,14px);
+    color:var(--muted);
+    line-height:1.4;
+    margin-bottom:.6vh;
+    text-align:center;
+  }
+
+  /* ---------- Sidebar: in production + blog ---------- */
+  .sidebar{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .sidebar .panel-inner-split{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    flex:1 1 auto;
+  }
+  .inprod-list{
+    columns:2;
+    column-gap:1vw;
+    margin:0;
+    padding:0;
+    list-style:none;
+    overflow-y:auto;
+    max-height:34vh;
+    min-height:0;
+    scrollbar-width:thin;
+    scrollbar-color:var(--red) transparent;
+  }
+  .inprod-list li{
+    break-inside:avoid;
+    font-size:clamp(9.5px,1.5vh,17px);
+    line-height:1.4;
+    margin-bottom:1.4vh;
+    padding-left:.6em;
+    border-left:2px solid var(--red);
+  }
+  .inprod-list .title{
+    display:block;
+    color:var(--text);
+    font-weight:600;
+  }
+  .inprod-list .rep{
+    color:var(--gold);
+    font-size:.9em;
+  }
+
+  .blog-wrap{
+    margin-top:1.6vh;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-auto-rows:min-content;
+    gap:.8vw .8vw;
+    max-height:22vh;
+    overflow-y:auto;
+    scrollbar-width:thin;
+    scrollbar-color:var(--gold) transparent;
+    padding-right:.2vw;
+  }
+  .blog-box{
+    background:var(--panel-2);
+    border-radius:4px;
+    padding:1.1vh .7vw;
+  }
+  .blog-box .title{
+    display:block;
+    font-size:clamp(11px,1.6vh,18px);
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:.3vh;
+  }
+  .blog-box .rep{
+    color:var(--gold);
+    font-size:clamp(9px,1.25vh,14px);
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    flex:0 0 auto;
+    padding:.6vh 2vw;
+    background:#000;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    font-size:clamp(7px,1vh,11px);
+    color:var(--faint);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .refresh-status{
+    display:flex;
+    align-items:center;
+    gap:.5em;
+  }
+  .refresh-status::before{
+    content:"";
+    width:.6em;
+    height:.6em;
+    border-radius:50%;
+    background:#2ecc71;
+    box-shadow:0 0 6px #2ecc71;
+    flex:0 0 auto;
+  }
+  .refresh-status.stale::before{
+    background:#e0a72e;
+    box-shadow:0 0 6px #e0a72e;
+  }
+</style>
+</head>
+<body>
+<div class="tv-frame">
+
+  <header>
+    <div class="brand">
+      <span class="mark">Hall Monitor</span>
+      <span class="sub">Troy Trojan Vision</span>
+    </div>
+    <div class="week">
+      <span class="label">Week Of</span>
+      <span id="week-value">8/17 – 8/21</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ANCHOR SCHEDULE -->
+    <section class="panel">
+      <h2>Anchor Schedule</h2>
+
+      <h3>Midday</h3>
+      <table class="sched">
+        <thead>
+          <tr><th></th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
+        </thead>
+        <tbody id="midday-body">
+          <tr><td class="role">News</td><td>Callie</td><td>Tristan H.</td><td>Madyson</td><td>Mika</td><td>Madyson</td></tr>
+          <tr><td class="role">Global</td><td>Jackson</td><td>A'Jaydah</td><td>Judah</td><td>Katlynn</td><td>Peyton</td></tr>
+          <tr><td class="role">Sports</td><td>Donald</td><td>Natalie</td><td>Reese</td><td>Olley</td><td>Colby</td></tr>
+          <tr><td class="role">Weather</td><td>Atticus</td><td>Brady</td><td>Lili</td><td>Nic</td><td>Lindsay</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Nightly News</h3>
+      <table class="sched">
+        <thead>
+          <tr><th></th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
+        </thead>
+        <tbody id="nightly-body">
+          <tr><td class="role">L Anchor</td><td>Dawson</td><td>Ty</td><td>Avery</td><td>Ty</td><td>Hunter</td></tr>
+          <tr><td class="role">R Anchor</td><td>Savannah</td><td>Avery</td><td>Gianna</td><td>Nate</td><td>Jimmy</td></tr>
+          <tr><td class="role">Sports</td><td>Hunter</td><td>Joseph</td><td>Jimmy</td><td>Jimmy</td><td>Joseph</td></tr>
+          <tr><td class="role">Weather</td><td>Avery</td><td>Hunter</td><td>Dawson</td><td>Jordan</td><td>Ty</td></tr>
+          <tr><td class="role">Director</td><td>Nate</td><td>Dawson</td><td>Hunter</td><td>Joseph</td><td>Jordan</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Global</h3>
+      <table class="sched">
+        <thead>
+          <tr><th></th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
+        </thead>
+        <tbody id="global-body">
+          <tr><td class="role">Anchor</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+          <tr><td class="role">Director</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+        </tbody>
+      </table>
+
+      <div class="global-note">
+        <span id="global-note-text">Directors must be onsite by 3:00 to supervise any preshow production.</span>
+      </div>
+    </section>
+
+    <!-- STORY BOARD -->
+    <section class="panel">
+      <h2>Story Board</h2>
+
+      <h3>Stories in Production</h3>
+      <div class="airdate-grid" id="airdate-grid">
+        <div class="day-col" data-day="Mon">
+          <div class="day-label">Mon</div>
+          <div class="day-body">
+            <div class="story-card"><span class="title">Trojan Pantry</span><span class="rep">– Carrington</span></div>
+            <div class="story-card"><span class="title">Flock Cameras</span><span class="rep">– Ty</span></div>
+          </div>
+        </div>
+        <div class="day-col" data-day="Tue">
+          <div class="day-label">Tue</div>
+          <div class="day-body">
+            <div class="story-card"><span class="title">Artist Reception</span><span class="rep">– Avery</span></div>
+            <div class="story-card"><span class="title">Miss Alabama Volunteer</span><span class="rep">– Jordan</span></div>
+            <div class="story-card"><span class="title">Town Hall</span><span class="rep">– Jimmy</span></div>
+          </div>
+        </div>
+        <div class="day-col" data-day="Wed">
+          <div class="day-label">Wed</div>
+          <div class="day-body">
+            <div class="story-card"><span class="title">Resume Workshop</span><span class="rep">– Savannah</span></div>
+            <div class="story-card"><span class="title">Academy Street Opens</span><span class="rep">– Ty</span></div>
+          </div>
+        </div>
+        <div class="day-col" data-day="Thu">
+          <div class="day-label">Thu</div>
+          <div class="day-body">
+            <div class="story-card"><span class="title">Transition to College</span><span class="rep">– Jimmy</span></div>
+          </div>
+        </div>
+        <div class="day-col" data-day="Fri">
+          <div class="day-label">Fri</div>
+          <div class="day-body"><div class="empty">—</div></div>
+        </div>
+        <div class="day-col" data-day="Sat">
+          <div class="day-label">Sat</div>
+          <div class="day-body">
+            <div class="story-card"><span class="title">Fall Fan Day</span><span class="rep">– Hunter</span></div>
+          </div>
+        </div>
+        <div class="day-col" data-day="Sun">
+          <div class="day-label">Sun</div>
+          <div class="day-body">
+            <div class="story-card"><span class="title">Soccer</span><span class="rep">– Joseph</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Planned Air Date</h3>
+      <div class="pkg-grid" id="pkg-grid">
+        <div class="pkg-col">
+          <div class="day-label">Tue</div>
+          <div class="pkg-item">Silent Disco PKG</div>
+          <div class="pkg-item">Flock Cameras PKG</div>
+          <div class="pkg-item">Transport Resources (Jordan)</div>
+        </div>
+        <div class="pkg-col">
+          <div class="day-label">Wed</div>
+          <div class="pkg-item">Trojan Pantry PKG</div>
+          <div class="pkg-item">Artist Reception PKG</div>
+          <div class="pkg-item">Town Hall PKG</div>
+        </div>
+        <div class="pkg-col">
+          <div class="day-label">Thu</div>
+          <div class="pkg-item">Resume Workshop PKG</div>
+          <div class="pkg-item">Academy Street PKG</div>
+          <div class="pkg-item">Health Resources PKG (Joseph)</div>
+        </div>
+        <div class="pkg-col">
+          <div class="day-label">Fri</div>
+          <div class="pkg-item">Transition to College PKG</div>
+          <div class="pkg-item">Library Resources PKG (Savannah)</div>
+          <div class="pkg-item">Safety Resources PKG (Avery)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIDEBAR: IN PRODUCTION + BLOG -->
+    <section class="panel sidebar">
+      <h2>EFFORTING</h2>
+      <ul class="inprod-list" id="inprod-list">
+        <li><span class="title">Student Health</span><span class="rep">– A'jaydah</span></li>
+        <li><span class="title">30 Years of FF</span><span class="rep">– Nate</span></li>
+        <li><span class="title">Heat MOS</span><span class="rep">– Carrington</span></li>
+        <li><span class="title">Heat + Homeless</span><span class="rep">– Gianna</span></li>
+        <li><span class="title">Intersection FOLO</span><span class="rep">– Avery</span></li>
+        <li><span class="title">Sports + Heat</span><span class="rep">– Joseph</span></li>
+        <li><span class="title">Badminton Club</span><span class="rep">– Dawson</span></li>
+        <li><span class="title">Wrestling Club</span><span class="rep">– Hunter</span></li>
+        <li><span class="title">Goalie Coaches</span><span class="rep">– Joseph</span></li>
+        <li><span class="title">BSB Coaches</span><span class="rep">– Jimmy/Nate</span></li>
+        <li><span class="title">Soccer Club</span><span class="rep">– Jimmy</span></li>
+      </ul>
+
+      <h2 style="margin-top:1.2vh;">Blog Posts</h2>
+      <div class="blog-wrap" id="blog-wrap">
+        <div class="blog-box">
+          <span class="title">Flock Cameras</span>
+          <span class="rep">– Ty</span>
+        </div>
+        <div class="blog-box">
+          <span class="title">Taste of Troy</span>
+          <span class="rep">– Lili</span>
+        </div>
+        <div class="blog-box">
+          <span class="title">Safety Resources</span>
+          <span class="rep">– Avery</span>
+        </div>
+        <div class="blog-box">
+          <span class="title">Health Resources</span>
+          <span class="rep">– Joseph</span>
+        </div>
+        <div class="blog-box">
+          <span class="title">Artist Reception</span>
+          <span class="rep">– Max/Avery</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>Hall Monitor · Troy Trojan Vision Broadcast</span>
+    <span id="refresh-status" class="refresh-status">Connecting…</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var SOURCES = {
+    anchor: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSwObb3pyhHBXs2az4oWYup9-K2StEtxFulZKepYMlFHmMoZp23BxfW2LrUG0FnPr44hHJhDwT0_Jxe/pub?gid=0&single=true&output=csv",
+    story:  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSOMZC4i78cLYnNw6H8L3FCTEOU9hXeE6hpDsGXHiwI02h4_GA4qtR5HoIsH4OrxSfUBBOQtTX4BIfu/pub?gid=887785015&single=true&output=csv",
+    blog:   "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWD-JuHDwTmYa4aQEMq57ScNFBAEfrxKb8S3VHwADWPTCQLoFR_kSYHuccux6aWAkiu64LVofNtMPF/pub?gid=1768086579&single=true&output=csv"
+  };
+  var REFRESH_MS = 5 * 60 * 1000; // 5 minutes
+
+  // ---------- CSV parsing ----------
+  function parseCSV(text){
+    var rows = [], row = [], field = "", inQuotes = false;
+    for (var i = 0; i < text.length; i++){
+      var c = text[i];
+      if (inQuotes){
+        if (c === '"'){
+          if (text[i+1] === '"'){ field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ','){ row.push(field); field = ""; }
+        else if (c === '\r'){ /* skip */ }
+        else if (c === '\n'){ row.push(field); rows.push(row); row = []; field = ""; }
+        else field += c;
+      }
+    }
+    if (field.length || row.length){ row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  function cell(rows, r, c){
+    return (rows[r] && rows[r][c] !== undefined) ? String(rows[r][c]).trim() : "";
+  }
+
+  function findRowIndex(rows, matchFn, from, to){
+    from = from || 0; to = (to === undefined) ? rows.length : to;
+    for (var r = from; r < to && r < rows.length; r++){
+      if (matchFn(cell(rows, r, 0).toLowerCase())) return r;
+    }
+    return -1;
+  }
+
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function(m){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[m];
+    });
+  }
+
+  // ---------- Anchor Schedule ----------
+  function fillSchedTable(tbodyId, rows, headerIdx, boundaryIdx, roleDefs){
+    var tbody = document.getElementById(tbodyId);
+    if (!tbody || headerIdx === -1) return;
+    var html = "";
+    roleDefs.forEach(function(def){
+      var r = findRowIndex(rows, function(t){ return t === def[0]; }, headerIdx + 1, boundaryIdx);
+      html += "<tr><td class=\"role\">" + esc(def[1]) + "</td>";
+      for (var c = 1; c <= 5; c++){
+        var v = (r !== -1) ? cell(rows, r, c) : "";
+        html += "<td>" + esc(v || "–") + "</td>";
+      }
+      html += "</tr>";
+    });
+    tbody.innerHTML = html;
+  }
+
+  function renderAnchor(rows){
+    var week = cell(rows, 0, 0);
+    if (week) document.getElementById("week-value").textContent = week;
+
+    var middayHeader = findRowIndex(rows, function(t){ return t === "midday"; });
+    var nightlyHeader = findRowIndex(rows, function(t){ return t === "nightly news"; }, middayHeader + 1);
+    var globalHeader = findRowIndex(rows, function(t){ return t === "global"; }, (nightlyHeader === -1 ? middayHeader + 1 : nightlyHeader + 1));
+
+    fillSchedTable("midday-body", rows, middayHeader, nightlyHeader === -1 ? rows.length : nightlyHeader, [
+      ["news", "News"], ["global anchor", "Global"], ["sports", "Sports"], ["weather", "Weather"]
+    ]);
+    fillSchedTable("nightly-body", rows, nightlyHeader, globalHeader === -1 ? rows.length : globalHeader, [
+      ["l anchor", "L Anchor"], ["r anchor", "R Anchor"], ["sports", "Sports"], ["weather", "Weather"], ["director", "Director"]
+    ]);
+    fillSchedTable("global-body", rows, globalHeader, rows.length, [
+      ["anchor", "Anchor"], ["director", "Director"]
+    ]);
+
+    if (globalHeader !== -1){
+      for (var r = globalHeader + 1; r < rows.length; r++){
+        var t = cell(rows, r, 0);
+        if (t && t.split(" ").length > 4){
+          document.getElementById("global-note-text").textContent = t;
+          break;
+        }
+      }
+    }
+  }
+
+  // ---------- Story Board ----------
+  var DAY_KEYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+  function parseColumnStories(rows, headerRowIdx, endRowIdx, columns){
+    var result = {};
+    columns.forEach(function(col){ result[col.key] = []; });
+    for (var r = headerRowIdx + 1; r < endRowIdx; r++){
+      columns.forEach(function(col){
+        var text = cell(rows, r, col.index);
+        if (!text) return;
+        if (/^[-–]/.test(text)){
+          var rep = text.replace(/^[-–]\s*/, "");
+          var list = result[col.key];
+          if (list.length) list[list.length - 1].rep = rep;
+        } else {
+          result[col.key].push({ title: text, rep: null });
+        }
+      });
+    }
+    return result;
+  }
+
+  function parseColumnItems(rows, startRowIdx, endRowIdx, columns){
+    var result = {};
+    columns.forEach(function(col){ result[col.key] = []; });
+    for (var r = startRowIdx; r < endRowIdx; r++){
+      columns.forEach(function(col){
+        var text = cell(rows, r, col.index);
+        if (text) result[col.key].push(text);
+      });
+    }
+    return result;
+  }
+
+  function renderStoryBoard(rows){
+    var headerIdx = findRowIndex(rows, function(t){ return t === "mon"; });
+    if (headerIdx === -1) return;
+
+    var headerRow = rows[headerIdx];
+    var columns = [];
+    for (var c = 0; c < 7; c++){
+      columns.push({ index: c, key: DAY_KEYS[c] });
+    }
+    var effortIdx = -1;
+    for (var c2 = 7; c2 < headerRow.length; c2++){
+      if (/effort/i.test(headerRow[c2] || "")){ effortIdx = c2; break; }
+    }
+    if (effortIdx !== -1) columns.push({ index: effortIdx, key: "Efforting" });
+
+    var boundaryIdx = findRowIndex(rows, function(t){ return t.indexOf("air date") === 0 || t.indexOf("air dates") === 0; }, headerIdx + 1);
+    if (boundaryIdx === -1) boundaryIdx = rows.length;
+
+    var stories = parseColumnStories(rows, headerIdx, boundaryIdx, columns);
+
+    // Air date grid
+    var grid = document.getElementById("airdate-grid");
+    if (grid){
+      DAY_KEYS.forEach(function(day){
+        var col = grid.querySelector('.day-col[data-day="' + day + '"]');
+        if (!col) return;
+        var body = col.querySelector(".day-body");
+        var items = stories[day] || [];
+        if (!items.length){
+          body.innerHTML = '<div class="empty">—</div>';
+        } else {
+          body.innerHTML = items.map(function(it){
+            return '<div class="story-card"><span class="title">' + esc(it.title) + '</span>' +
+              (it.rep ? '<span class="rep">– ' + esc(it.rep) + '</span>' : '') + '</div>';
+          }).join("");
+        }
+      });
+    }
+
+    // In production (Efforting)
+    var inprod = document.getElementById("inprod-list");
+    if (inprod && effortIdx !== -1){
+      var effItems = stories["Efforting"] || [];
+      inprod.innerHTML = effItems.length ? effItems.map(function(it){
+        return '<li><span class="title">' + esc(it.title) + '</span>' +
+          (it.rep ? '<span class="rep">– ' + esc(it.rep) + '</span>' : '') + '</li>';
+      }).join("") : '<li><span class="title">Nothing in production</span></li>';
+    }
+
+    // Packages ready — everything after the boundary row
+    var pkgGrid = document.getElementById("pkg-grid");
+    if (pkgGrid && boundaryIdx < rows.length){
+      var pkgColumns = [];
+      for (var c3 = 0; c3 < 7; c3++) pkgColumns.push({ index: c3, key: DAY_KEYS[c3] });
+      var pkgItems = parseColumnItems(rows, boundaryIdx + 1, rows.length, pkgColumns);
+      var activeDays = DAY_KEYS.filter(function(d){ return (pkgItems[d] || []).length > 0; });
+      if (!activeDays.length){
+        pkgGrid.innerHTML = '<div class="empty">No packages logged</div>';
+      } else {
+        pkgGrid.style.gridTemplateColumns = "repeat(" + activeDays.length + ",1fr)";
+        pkgGrid.innerHTML = activeDays.map(function(d){
+          return '<div class="pkg-col"><div class="day-label">' + d + '</div>' +
+            pkgItems[d].map(function(p){ return '<div class="pkg-item">' + esc(p) + '</div>'; }).join("") +
+            '</div>';
+        }).join("");
+      }
+    }
+  }
+
+  // ---------- Blog Posts ----------
+  // The sheet has a label row ("Online articles" / "due:") followed by a blank
+  // row, then the actual entries: a title row (one title per column, spread
+  // across as many columns as there are posts) and a rep row directly under
+  // it ("-Name"). The number of title columns is NOT fixed to 2 — it grows
+  // as more posts are added to the sheet. We detect the real title row (the
+  // first non-empty row after the label), count however many columns have
+  // a title there, and flatten every entry into a single list. Display is a
+  // fixed 2-column grid (see .blog-wrap CSS) that just grows more rows as
+  // the flattened list grows, rather than trying to mirror sheet columns.
+  function renderBlog(rows){
+    // 1. Find the label row (first row with text in col 0 or col 1)
+    var labelIdx = -1;
+    for (var r = 0; r < rows.length; r++){
+      if (cell(rows, r, 0) || cell(rows, r, 1)){ labelIdx = r; break; }
+    }
+    if (labelIdx === -1) return;
+
+    // 2. Find the title row: first row after the label with ANY non-empty cell
+    var titleRowIdx = -1;
+    for (var r2 = labelIdx + 1; r2 < rows.length; r2++){
+      var hasContent = false;
+      var rowArr = rows[r2] || [];
+      for (var c0 = 0; c0 < rowArr.length; c0++){
+        if (cell(rows, r2, c0)){ hasContent = true; break; }
+      }
+      if (hasContent){ titleRowIdx = r2; break; }
+    }
+    if (titleRowIdx === -1) return;
+
+    // 3. Every column with a value in the title row is a blog entry slot
+    var titleRow = rows[titleRowIdx] || [];
+    var columns = [];
+    for (var c = 0; c < titleRow.length; c++){
+      if (cell(rows, titleRowIdx, c)) columns.push({ index: c, key: "col" + c });
+    }
+    if (!columns.length) return;
+
+    // 4. Parse title (+ optional "-Rep" line right under it) per column
+    var items = parseColumnStories(rows, titleRowIdx - 1, rows.length, columns);
+
+    // 5. Flatten in left-to-right column order into one list
+    var flat = [];
+    columns.forEach(function(col){
+      (items[col.key] || []).forEach(function(it){ flat.push(it); });
+    });
+
+    var wrap = document.getElementById("blog-wrap");
+    if (!wrap) return;
+    wrap.innerHTML = flat.length ? flat.map(function(it){
+      return '<div class="blog-box"><span class="title">' + esc(it.title) + '</span>' +
+        (it.rep ? '<span class="rep">– ' + esc(it.rep) + '</span>' : '') + '</div>';
+    }).join("") : '<div class="blog-box"><span class="title">—</span></div>';
+  }
+
+  // ---------- Fetch + refresh cycle ----------
+  function fetchCSV(url){
+    return fetch(url, { cache: "no-store" }).then(function(res){
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.text();
+    }).then(parseCSV);
+  }
+
+  function setStatus(text, stale){
+    var el = document.getElementById("refresh-status");
+    if (!el) return;
+    el.textContent = text;
+    el.classList.toggle("stale", !!stale);
+  }
+
+  function refreshAll(){
+    var jobs = [
+      fetchCSV(SOURCES.anchor).then(renderAnchor),
+      fetchCSV(SOURCES.story).then(renderStoryBoard),
+      fetchCSV(SOURCES.blog).then(renderBlog)
+    ];
+    Promise.allSettled ? Promise.allSettled(jobs).then(onSettled) : Promise.all(jobs.map(function(p){
+      return p.then(function(v){ return { status: "fulfilled", value: v }; },
+                     function(e){ return { status: "rejected", reason: e }; });
+    })).then(onSettled);
+
+    function onSettled(results){
+      var failed = results.filter(function(r){ return r.status === "rejected"; }).length;
+      var now = new Date();
+      var timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      if (failed === 0){
+        setStatus("Live · updated " + timeStr, false);
+      } else if (failed < results.length){
+        setStatus("Partially updated " + timeStr + " · " + failed + " source(s) failed", true);
+      } else {
+        setStatus("Refresh failed at " + timeStr + " · showing last known data", true);
+      }
+    }
+  }
+
+  refreshAll();
+  setInterval(refreshAll, REFRESH_MS);
+})();
+</script>
+</body>
+</html>
