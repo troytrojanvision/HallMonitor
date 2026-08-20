@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hall Monitor</title>
+<style>
+  :root{
+    --bg:#09090b;
+    --panel:#151318;
+    --panel-2:#1c1a20;
+    --line:#2a2730;
+    --red:#b3122e;
+    --red-dim:#7a0d20;
+    --gold:#d4a017;
+    --text:#f4f3f6;
+    --muted:#a9a5b0;
+    --faint:#6f6b78;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;width:100%;
+    background:#000;
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    overflow:hidden;
+  }
+  .tv-frame{
+    position:relative;
+    width:min(100vw, 177.78vh);
+    height:min(100vh, 56.25vw);
+    margin:0 auto;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    color:var(--text);
+    box-shadow:0 0 0 1px #000;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:1.4vh 2vw;
+    background:linear-gradient(90deg,var(--red-dim),var(--red) 55%,var(--red-dim));
+    border-bottom:3px solid var(--gold);
+  }
+  header .brand{
+    display:flex;
+    align-items:baseline;
+    gap:1vw;
+  }
+  header .brand .mark{
+    font-weight:800;
+    font-size:clamp(18px,3.4vh,40px);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:#fff;
+    text-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+  header .brand .sub{
+    font-size:clamp(9px,1.3vh,16px);
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:#f4d9de;
+    opacity:.9;
+  }
+  header .week{
+    text-align:right;
+    font-size:clamp(10px,1.5vh,18px);
+    color:#fff;
+    letter-spacing:.05em;
+  }
+  header .week .label{
+    display:block;
+    font-size:clamp(8px,1.1vh,12px);
+    color:#f4d9de;
+    letter-spacing:.25em;
+    text-transform:uppercase;
+  }
+
+  /* ---------- Main grid ---------- */
+  main{
+    flex:1 1 auto;
+    display:grid;
+    grid-template-columns: 1.05fr 1.55fr 1fr;
+    gap:1.1vh 1vw;
+    padding:1.2vh 1.4vw;
+    min-height:0;
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-top:3px solid var(--red);
+    border-radius:6px;
+    padding:1vh 1vw;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .panel h2{
+    margin:0 0 1.2vh 0;
+    font-size:clamp(14px,2.4vh,28px);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:700;
+    border-bottom:1px solid var(--line);
+    padding-bottom:.8vh;
+  }
+  .panel h3{
+    margin:1.6vh 0 .8vh 0;
+    font-size:clamp(11px,1.7vh,19px);
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:700;
+  }
+
+  /* ---------- Anchor schedule tables ---------- */
+  table.sched{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+  }
+  table.sched th, table.sched td{
+    font-size:clamp(10px,1.75vh,20px);
+    padding:.7vh .3vw;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+  table.sched th{
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-size:clamp(9px,1.3vh,15px);
+  }
+  table.sched td.role{
+    text-align:left;
+    color:var(--gold);
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:clamp(9px,1.3vh,15px);
+    letter-spacing:.04em;
+  }
+  table.sched tr:last-child td{border-bottom:none;}
+  .global-note{
+    margin-top:1.6vh;
+    font-size:clamp(10px,1.6vh,18px);
+    color:var(--muted);
+    line-height:1.6;
+    background:var(--panel-2);
+    border-radius:4px;
+    padding:1.2vh .8vw;
+  }
+  .global-note b{color:var(--text);}
+
+  /* ---------- Story board ---------- */
+  .airdate-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:.5vw;
+    flex:0 0 auto;
+  }
+  .day-col{
+    background:var(--panel-2);
+    border-radius:4px;
+    padding:.5vh .4vw;
+    min-height:0;
+  }
+  .day-col .day-label{
+    font-size:clamp(9px,1.5vh,17px);
+    font-weight:800;
+    letter-spacing:.08em;
+    color:#fff;
+    text-transform:uppercase;
+    text-align:center;
+    background:var(--red);
+    border-radius:3px;
+    padding:.4vh 0;
+    margin-bottom:.8vh;
+  }
+  .story-card{
+    font-size:clamp(9px,1.3vh,15px);
+    line-height:1.3;
+    margin-bottom:1vh;
+  }
+  .story-card .title{
+    color:var(--text);
+    font-weight:600;
+    display:block;
+  }
+  .story-card .rep{
+    color:var(--gold);
+    font-size:.92em;
+  }
+  .day-col .empty{
+    color:var(--faint);
+    font-size:clamp(9px,1.3vh,15px);
+    text-align:center;
+    padding-top:.4vh;
+  }
+
+  .pkg-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:.5vw;
+    margin-top:.4vh;
+  }
+  .pkg-col .day-label{
+    font-size:clamp(9px,1.3vh,15px);
+    font-weight:800;
+    letter-spacing:.08em;
+    color:var(--bg);
+    text-transform:uppercase;
+    text-align:center;
+    background:var(--gold);
+    border-radius:3px;
+    padding:.35vh 0;
+    margin-bottom:.7vh;
+  }
+  .pkg-item{
+    font-size:clamp(8.5px,1.2vh,14px);
+    color:var(--muted);
+    line-height:1.4;
+    margin-bottom:.6vh;
+    text-align:center;
+  }
+
+  /* ---------- Sidebar: in production + blog ---------- */
+  .sidebar{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .sidebar .panel-inner-split{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    flex:1 1 auto;
+  }
+  .inprod-list{
+    columns:2;
+    column-gap:1vw;
+    margin:0;
+    padding:0;
+    list-style:none;
+  }
+  .inprod-list li{
+    break-inside:avoid;
+    font-size:clamp(9.5px,1.5vh,17px);
+    line-height:1.4;
+    margin-bottom:1.4vh;
+    padding-left:.6em;
+    border-left:2px solid var(--red);
+  }
+  .inprod-list .title{
+    display:block;
+    color:var(--text);
+    font-weight:600;
+  }
+  .inprod-list .rep{
+    color:var(--gold);
+    font-size:.9em;
+  }
+
+  .blog-wrap{
+    margin-top:1.6vh;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.8vw;
+  }
+  .blog-box{
+    background:var(--panel-2);
+    border-radius:4px;
+    padding:1.4vh .7vw;
+  }
+  .blog-box .kicker{
+    font-size:clamp(9px,1.25vh,14px);
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:700;
+    margin-bottom:.7vh;
+    display:block;
+  }
+  .blog-box .title{
+    display:block;
+    font-size:clamp(11px,1.7vh,19px);
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:.3vh;
+  }
+  .blog-box .rep{
+    color:var(--gold);
+    font-size:clamp(9px,1.25vh,14px);
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    flex:0 0 auto;
+    padding:.6vh 2vw;
+    background:#000;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    font-size:clamp(7px,1vh,11px);
+    color:var(--faint);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="tv-frame">
+
+  <header>
+    <div class="brand">
+      <span class="mark">Hall Monitor</span>
+      <span class="sub">Troy Trojan Vision</span>
+    </div>
+    <div class="week">
+      <span class="label">Week Of</span>
+      8/17 – 8/21
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ANCHOR SCHEDULE -->
+    <section class="panel">
+      <h2>Anchor Schedule</h2>
+
+      <h3>Midday</h3>
+      <table class="sched">
+        <thead>
+          <tr><th></th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="role">News</td><td>Callie</td><td>Tristan H.</td><td>Madyson</td><td>Mika</td><td>Madyson</td></tr>
+          <tr><td class="role">Global</td><td>Jackson</td><td>A'Jaydah</td><td>Judah</td><td>Katlynn</td><td>Peyton</td></tr>
+          <tr><td class="role">Sports</td><td>Donald</td><td>Natalie</td><td>Reese</td><td>Olley</td><td>Colby</td></tr>
+          <tr><td class="role">Weather</td><td>Atticus</td><td>Brady</td><td>Lili</td><td>Nic</td><td>Lindsay</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Nightly News</h3>
+      <table class="sched">
+        <thead>
+          <tr><th></th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="role">L Anchor</td><td>Dawson</td><td>Ty</td><td>Avery</td><td>Ty</td><td>Hunter</td></tr>
+          <tr><td class="role">R Anchor</td><td>Savannah</td><td>Avery</td><td>Gianna</td><td>Nate</td><td>Jimmy</td></tr>
+          <tr><td class="role">Sports</td><td>Hunter</td><td>Joseph</td><td>Jimmy</td><td>Jimmy</td><td>Joseph</td></tr>
+          <tr><td class="role">Weather</td><td>Avery</td><td>Hunter</td><td>Dawson</td><td>Jordan</td><td>Ty</td></tr>
+          <tr><td class="role">Director</td><td>Nate</td><td>Dawson</td><td>Hunter</td><td>Joseph</td><td>Jordan</td></tr>
+        </tbody>
+      </table>
+
+      <div class="global-note">
+        <b>Global —</b> Anchor &amp; Director: TBD all week.<br>
+        Directors must be onsite by 3:00 to supervise any preshow production.
+      </div>
+    </section>
+
+    <!-- STORY BOARD -->
+    <section class="panel">
+      <h2>Story Board</h2>
+
+      <h3>Air Date Stories</h3>
+      <div class="airdate-grid">
+        <div class="day-col">
+          <div class="day-label">Mon</div>
+          <div class="story-card"><span class="title">Trojan Pantry</span><span class="rep">– Carrington</span></div>
+          <div class="story-card"><span class="title">Flock Cameras</span><span class="rep">– Ty</span></div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">Tue</div>
+          <div class="story-card"><span class="title">Artist Reception</span><span class="rep">– Avery</span></div>
+          <div class="story-card"><span class="title">Miss Alabama Volunteer</span><span class="rep">– Jordan</span></div>
+          <div class="story-card"><span class="title">Town Hall</span><span class="rep">– Jimmy</span></div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">Wed</div>
+          <div class="story-card"><span class="title">Resume Workshop</span><span class="rep">– Savannah</span></div>
+          <div class="story-card"><span class="title">Academy Street Opens</span><span class="rep">– Ty</span></div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">Thu</div>
+          <div class="story-card"><span class="title">Transition to College</span><span class="rep">– Jimmy</span></div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">Fri</div>
+          <div class="empty">—</div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">Sat</div>
+          <div class="story-card"><span class="title">Fall Fan Day</span><span class="rep">– Hunter</span></div>
+        </div>
+        <div class="day-col">
+          <div class="day-label">Sun</div>
+          <div class="story-card"><span class="title">Soccer</span><span class="rep">– Joseph</span></div>
+        </div>
+      </div>
+
+      <h3>Packages Ready</h3>
+      <div class="pkg-grid">
+        <div class="pkg-col">
+          <div class="day-label">Tue</div>
+          <div class="pkg-item">Silent Disco PKG</div>
+          <div class="pkg-item">Flock Cameras PKG</div>
+          <div class="pkg-item">Transport Resources (Jordan)</div>
+        </div>
+        <div class="pkg-col">
+          <div class="day-label">Wed</div>
+          <div class="pkg-item">Trojan Pantry PKG</div>
+          <div class="pkg-item">Artist Reception PKG</div>
+          <div class="pkg-item">Town Hall PKG</div>
+        </div>
+        <div class="pkg-col">
+          <div class="day-label">Thu</div>
+          <div class="pkg-item">Resume Workshop PKG</div>
+          <div class="pkg-item">Academy Street PKG</div>
+          <div class="pkg-item">Health Resources PKG (Joseph)</div>
+        </div>
+        <div class="pkg-col">
+          <div class="day-label">Fri</div>
+          <div class="pkg-item">Transition to College PKG</div>
+          <div class="pkg-item">Library Resources PKG (Savannah)</div>
+          <div class="pkg-item">Safety Resources PKG (Avery)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIDEBAR: IN PRODUCTION + BLOG -->
+    <section class="panel sidebar">
+      <h2>In Production</h2>
+      <ul class="inprod-list">
+        <li><span class="title">Student Health</span><span class="rep">– A'jaydah</span></li>
+        <li><span class="title">30 Years of FF</span><span class="rep">– Nate</span></li>
+        <li><span class="title">Heat MOS</span><span class="rep">– Carrington</span></li>
+        <li><span class="title">Heat + Homeless</span><span class="rep">– Gianna</span></li>
+        <li><span class="title">Intersection FOLO</span><span class="rep">– Avery</span></li>
+        <li><span class="title">Sports + Heat</span><span class="rep">– Joseph</span></li>
+        <li><span class="title">Badminton Club</span><span class="rep">– Dawson</span></li>
+        <li><span class="title">Wrestling Club</span><span class="rep">– Hunter</span></li>
+        <li><span class="title">Goalie Coaches</span><span class="rep">– Joseph</span></li>
+        <li><span class="title">BSB Coaches</span><span class="rep">– Jimmy/Nate</span></li>
+        <li><span class="title">Soccer Club</span><span class="rep">– Jimmy</span></li>
+      </ul>
+
+      <h2 style="margin-top:1.2vh;">Blog Posts</h2>
+      <div class="blog-wrap">
+        <div class="blog-box">
+          <span class="kicker">Online Articles</span>
+          <span class="title">Tailgating Policy</span>
+          <span class="rep">– Dawson</span>
+        </div>
+        <div class="blog-box">
+          <span class="kicker">Due</span>
+          <span class="title">Intersection Issues</span>
+          <span class="rep">– Avery</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>Hall Monitor · Troy Trojan Vision Broadcast</span>
+    <span>Data snapshot — update via source sheets</span>
+  </footer>
+
+</div>
+</body>
+</html>
